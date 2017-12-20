@@ -1,0 +1,29 @@
+[[source]]
+
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.python.org/simple"
+
+
+[requires]
+
+python_version = "3.6"
+
+
+[dev-packages]
+
+six = "*"
+
+
+[packages]
+
+requests = "*"
+"e1839a8" = {path = ".", editable = true}
+odfpy = "*"
+pystache = "*"
+pycrypto = "*"
+easysettings = "*"
+qrcode = "*"
+pillow = "*"
+cryptography = "*"
+pyinstaller = "*"
