@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9a221052ad5254ac4d694334ad219b9076603892cf1170224673afadb4b6bfc5"
+            "sha256": "87bf5a6d78cb235a6fcaae2f985d40d929541aa513a30acaa9f649d7fa3251ba"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -151,6 +151,12 @@
                 "sha256:9aeec52d7da59912b15445d08b08d95cee48414f01dd035be06f04a825973c08"
             ],
             "version": "==1.9"
+        },
+        "nuitka": {
+            "hashes": [
+                "sha256:4ab589daed358382c8f47edc907cde74ec01485c563850fc44893ecc7de220dd"
+            ],
+            "version": "==0.5.28.1"
         },
         "odfpy": {
             "hashes": [
