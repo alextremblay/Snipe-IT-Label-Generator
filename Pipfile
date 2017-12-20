@@ -13,18 +13,14 @@ python_version = "3.6"
 [dev-packages]
 
 six = "*"
+pyinstaller = "*"
 
 
 [packages]
 
 requests = "*"
 "e1839a8" = {path = ".", editable = true}
-odfpy = "*"
 pystache = "*"
-pycrypto = "*"
-easysettings = "*"
 qrcode = "*"
 pillow = "*"
 cryptography = "*"
-pyinstaller = "*"
-nuitka = "*"
