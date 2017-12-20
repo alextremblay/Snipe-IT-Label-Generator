@@ -250,6 +250,9 @@ def do_first_run_setup(password=None) -> tuple:
         # we need to store the cryptographic salt in order to derive the same
         # key from the same password the next time our app is run
 
+    # Create STORED_DATA_PATH if it doesn't exists
+    STORED_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+
     # store encrypted key and other info in STORED_DATA_PATH
     with STORED_DATA_PATH.open('w+b') as f:
         pickle.dump(app_configuration, f)
