@@ -1,5 +1,5 @@
 .idea/
 AssetLabeLgenerator.egg-info
 __pycache__
-AssetLabelGenerator/build
-AssetLabelGenerator/dist
+build/
+dist/
