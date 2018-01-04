@@ -14,6 +14,7 @@ python_version = "3.6"
 
 six = "*"
 pyinstaller = "*"
+cx-freeze = "*"
 
 
 [packages]
@@ -24,3 +25,4 @@ pystache = "*"
 qrcode = "*"
 pillow = "*"
 cryptography = "*"
+cx-freeze = "*"

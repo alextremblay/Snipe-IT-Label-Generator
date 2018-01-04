@@ -43,4 +43,5 @@ setup(
         'console_scripts': [
             'mkassetlabel = AssetLabelGenerator.mkassetlabel:main'
         ]
-})
+    }
+)
