@@ -4,3 +4,7 @@ __pycache__
 build/
 dist/
 interpreter/
+<<<<<<< HEAD
+=======
+
+>>>>>>> 59cd9ce... cleanup and testing
