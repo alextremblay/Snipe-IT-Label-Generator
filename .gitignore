@@ -3,3 +3,4 @@ AssetLabeLgenerator.egg-info
 __pycache__
 build/
 dist/
+interpreter/

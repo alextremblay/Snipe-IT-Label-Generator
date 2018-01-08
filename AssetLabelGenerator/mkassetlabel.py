@@ -233,7 +233,8 @@ def do_first_run_setup(password=None) -> tuple:
     api_prompt = 'Please enter your personal Snipe-IT API key. A new API key ' \
                  'can be aquired from the "Manage API Keys" menu in your user ' \
                  'profile menu on your Snipe-IT installation \nAPI>'
-    unencrypted_api_key = input(api_prompt)
+    print(api_prompt)
+    unencrypted_api_key = sys.stdin.readline(1072)
     pass_prompt = 'Please enter the password you would like to use to encrypt' \
                   ' your Snipe-IT API key. The password can be ' \
                   'anything you like, but should be at least 8 characters ' \
@@ -378,7 +379,7 @@ def get_info_from_template(tempdir) -> dict:
 
     # get tags from template
     content_xml_path = tempdir / 'content.xml'
-    with open(content_xml_path) as f:
+    with open(str(content_xml_path)) as f:
         parsed_template = pystache.parse(f.read())
         info['template_tags'] = [
             item.key for item in parsed_template._parse_tree
