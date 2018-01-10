@@ -233,8 +233,7 @@ def do_first_run_setup(password=None) -> tuple:
     api_prompt = 'Please enter your personal Snipe-IT API key. A new API key ' \
                  'can be aquired from the "Manage API Keys" menu in your user ' \
                  'profile menu on your Snipe-IT installation \nAPI>'
-    print(api_prompt)
-    unencrypted_api_key = sys.stdin.readline(1072)
+    unencrypted_api_key = input(api_prompt)
     pass_prompt = 'Please enter the password you would like to use to encrypt' \
                   ' your Snipe-IT API key. The password can be ' \
                   'anything you like, but should be at least 8 characters ' \
