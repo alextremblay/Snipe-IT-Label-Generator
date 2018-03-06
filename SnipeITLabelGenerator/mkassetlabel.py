@@ -313,9 +313,9 @@ def get_api_key(app_configuration, password) -> str:
 
     '''
     pw = password
-    cipher = PasswordCipher(pw, app_configuration['encryption_salt'])
     while True:
         try:
+            cipher = PasswordCipher(pw, app_configuration['encryption_salt'])
             api_key = cipher.decrypt(app_configuration['encrypted_api_key'])
         except InvalidPassword:
             pw = getpass('Error: the provided password is unable to decrypt '
