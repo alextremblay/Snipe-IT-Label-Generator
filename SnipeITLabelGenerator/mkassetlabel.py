@@ -136,12 +136,19 @@ def main():
     # process inputs
     input_file_prompt = 'Please provide the filepath where your template odt ' \
                         'file can be found (ie. "~/Downloads/Asset-Template' \
-                        '.odt") \nTemplate File path> '
+                        '.odt") \nTemplate File path ' \
+                        '[{}]> '.format(str(DEFAULT_IN_FILE_PATH))
     if not args.input_file:
-        if DEFAULT_IN_FILE_PATH.exists():
-            args.input_file = str(DEFAULT_IN_FILE_PATH)
-        else:
-            args.input_file = input(input_file_prompt)
+        choice = input(input_file_prompt)
+        if not choice:  # User pressed enter to select default file path
+            if DEFAULT_IN_FILE_PATH.exists():
+                args.input_file = str(DEFAULT_IN_FILE_PATH)
+            else:
+                raise Exception(
+                    'There is no template file at {}. Please check and try '
+                    'again'.format(str(DEFAULT_IN_FILE_PATH)))
+        else:  # User supplied file path
+            args.input_file = choice
 
     asset_number_prompt = 'Please provide the asset numer you would like to ' \
                           'generate a label for \nAsset Number> '
