@@ -90,7 +90,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 # Constants
 STORED_DATA_PATH = Path.home() / '.config' / 'asset-label-generator' / 'data'
-
+DEFAULT_IN_FILE_PATH = Path.home() / 'Asset-Template.odt'
+DEFAULT_OUT_FILE_PATH = Path.home() / 'Asset-Label.odt'
 
 def main():
     def get_program_arguments():
@@ -137,7 +138,10 @@ def main():
                         'file can be found (ie. "~/Downloads/Asset-Template' \
                         '.odt") \nTemplate File path> '
     if not args.input_file:
-        args.input_file = input(input_file_prompt)
+        if DEFAULT_IN_FILE_PATH.exists():
+            args.input_file = str(DEFAULT_IN_FILE_PATH)
+        else:
+            args.input_file = input(input_file_prompt)
 
     asset_number_prompt = 'Please provide the asset numer you would like to ' \
                           'generate a label for \nAsset Number> '
@@ -146,9 +150,14 @@ def main():
 
     output_file_prompt = 'Please provide the filepath where you would like the ' \
                          'generated file to be saved (ie. "~/Downloads/Asset-' \
-                         'Label.odt") \nOutput File Path> '
+                         'Label.odt") \nOutput File Path ' \
+                         '[{}]> '.format(str(DEFAULT_OUT_FILE_PATH))
     if not args.output_file:
-        args.output_file = input(output_file_prompt)
+        choice = input(output_file_prompt)
+        if not choice:  # User pressed enter to select default file path
+            args.output_file = str(DEFAULT_OUT_FILE_PATH)
+        else:  # User supplied file path
+            args.output_file = choice
 
     input_file = Path(args.input_file).expanduser()
     output_file = Path(args.output_file).expanduser()
@@ -310,7 +319,7 @@ def get_api_key(app_configuration, password) -> str:
     return api_key
 
 
-def unpack_template(input_path, tempdir) -> None:
+def unpack_template(input_path, tempdir) -> dict:
     '''
 
     Args:
@@ -535,6 +544,7 @@ def pack_template(tempdir, output_file, compression_info):
     Args:
         tempdir: Path
         output_file: Path
+        compression_info: dict
 
     Side Effect:
         The contents of tempdir are packed into an archive stored at output_file
