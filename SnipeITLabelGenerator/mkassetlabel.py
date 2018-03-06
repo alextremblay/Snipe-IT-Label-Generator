@@ -15,12 +15,18 @@
     COMMAND LINE OPTIONS
 
         -h, --help
-            print this help message and exit
+            Print this help message and exit
         -r, --reset
-            delete stored application data and exit
-        -a, --asset_number _number_
-            The asset tag number (without any leading zeroes) of the Snipe-IT
-            asset for which to make a label. (ie. 415)
+            Delete stored application data and exit
+        -t, --type
+            The item type to look up. Must be one of the following keywords:
+                assets, accessories, consumables, components
+        -n, --item-num _number_
+            The unique number id of the item you are looking to make a label for.
+            When you navigate to an item (asset/comsumable/accessory/etc),
+            this id can be found at the end of the url path. ie:
+            For an asset found at https://snipe.company,com/hardware/428 the item number is 428
+            For an accessory found at https://snipe.company.com/accessories/35 the item number is 35
         -p, --password _password_
             The password used to encrypt / decrypt your Snipe-IT API key
         -i, --input-file _filepath_
@@ -118,7 +124,8 @@ def main():
         else:
             parser = argparse.ArgumentParser()
             parser.add_argument('-p', '--password')
-            parser.add_argument('-a', '--asset-number', type=int)
+            parser.add_argument('-t', '--type')
+            parser.add_argument('-n', '--item-num')
             parser.add_argument('-i', '--input-file')
             parser.add_argument('-o', '--output-file')
             return parser.parse_args()
@@ -150,10 +157,31 @@ def main():
         else:  # User supplied file path
             args.input_file = choice
 
-    asset_number_prompt = 'Please provide the asset numer you would like to ' \
+    item_type_prompt = 'Please specify the type of item you would like to ' \
+                       'generate a label for. The avaiable options are: ' \
+                       'assets, accessories, consumables, components ' \
+                       '\nItem Type [assets]> '
+    if not args.type:
+        choice = input(item_type_prompt)
+        if not choice:  # User pressed enter to select default file path
+            args.type = 'assets'
+        else:  # User supplied file path
+            args.type = choice
+    try:
+        assert args.type in \
+               ['assets', 'accessories', 'consumables', 'components']
+    except AssertionError:
+        print('Sorry, {} is not a valid selection. Please try '
+              'again'.format(args.type))
+        sys.exit(1)
+    if args.type == 'assets':
+        # Snipe-IT API entry point for assets is actually hardware
+        args.type = 'hardware'
+
+    item_number_prompt = 'Please provide the asset numer you would like to ' \
                           'generate a label for \nAsset Number> '
-    if not args.asset_number:
-        args.asset_number = input(asset_number_prompt)
+    if not args.item_num:
+        args.item_num = input(item_number_prompt)
 
     output_file_prompt = 'Please provide the filepath where you would like the ' \
                          'generated file to be saved (ie. "~/Downloads/Asset-' \
@@ -187,11 +215,12 @@ def main():
 
         # get the info we need from the server
         asset_data = get_info_from_server(template_info['template_tags'],
-                                          args.asset_number, api_key,
+                                          'hardware',
+                                          str(args.item_num), api_key,
                                           app_configuration)
 
         # modify template
-        generate_qr_code(args.asset_number, template_info, tempdir,
+        generate_qr_code(args.item_num, template_info, tempdir,
                        app_configuration)
         render_template_info(template_info, tempdir, asset_data)
 
@@ -404,13 +433,20 @@ def get_info_from_template(tempdir) -> dict:
     return info
 
 
-def get_info_from_server(template_tags, asset_number, api_key, app_configuration) -> dict:
+def get_info_from_server(template_tags,
+                         item_type,
+                         item_id,
+                         api_key,
+                         app_configuration) -> dict:
     '''
 
     Args:
         template_tags:
             Something like:
             ['asset_tag', 'serial_number', 'model_number']
+        item_type:
+            One of: ['hardware', 'accessories', 'consumables', 'components']
+        item_id: str
         api_key: str
         app_configuration:
             Something like:
@@ -429,7 +465,8 @@ def get_info_from_server(template_tags, asset_number, api_key, app_configuration
         }
 
     '''
-    url = app_configuration['snipe_it_url'] + 'api/v1/hardware/' + str(asset_number)
+    url = '{root}api/v1/{type}/{id}'.format(
+        root=app_configuration['snipe_it_url'], type=item_type, id=item_id)
     headers = {
         'authorization': 'Bearer ' + api_key,
         'accept': "application/json"
