@@ -128,6 +128,8 @@ def main():
             parser.add_argument('-n', '--item-num')
             parser.add_argument('-i', '--input-file')
             parser.add_argument('-o', '--output-file')
+            parser.add_argument('-s', '--show-available-fields',
+                                action='store_true')
             return parser.parse_args()
 
     args = get_program_arguments()
@@ -233,10 +235,24 @@ def main():
             print('{{' + item + '}}')
 
         # get the info we need from the server
-        asset_data = get_info_from_server(template_info['template_tags'],
-                                          args.type,
-                                          str(args.item_num), api_key,
-                                          app_configuration)
+        data = get_info_from_server(args.type, str(args.item_num), api_key,
+                                    app_configuration)
+
+        if args.show_available_fields:
+            print('Here are the available fields for this particular inventory item:')
+            for key, value in data.items():
+                key_name = "{{{{{}}}}}".format(key)
+                print("{:15} = {}".format(key_name, value))
+            sys.exit(0)
+
+        asset_data = {}
+        for tag in template_info['template_tags']:
+            if tag in data:
+                asset_data[tag] = data[tag]
+            else:
+                print(
+                    "WARNING: template field {{ {0} }} not found in data "
+                    "returned from server.".format(tag))
 
         # modify template
         generate_qr_code(args.item_num, template_info, tempdir,
@@ -452,8 +468,7 @@ def get_info_from_template(tempdir) -> dict:
     return info
 
 
-def get_info_from_server(template_tags,
-                         item_type,
+def get_info_from_server(item_type,
                          item_id,
                          api_key,
                          app_configuration) -> dict:
@@ -533,15 +548,7 @@ def get_info_from_server(template_tags,
     else:
         data = flatten(data)
         data = clean(data)
-        results = {}
-        for tag in template_tags:
-            if tag in data:
-                results[tag] = data[tag]
-            else:
-                print(
-                    "WARNING: template field {{ {0} }} not found in data "
-                    "returned from server.".format(tag))
-        return results
+        return data
 
 
 def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
