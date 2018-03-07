@@ -128,6 +128,8 @@ def main():
             parser.add_argument('-n', '--item-num')
             parser.add_argument('-i', '--input-file')
             parser.add_argument('-o', '--output-file')
+            parser.add_argument('-s', '--show-available-fields',
+                                action='store_true')
             return parser.parse_args()
 
     args = get_program_arguments()
@@ -233,10 +235,24 @@ def main():
             print('{{' + item + '}}')
 
         # get the info we need from the server
-        asset_data = get_info_from_server(template_info['template_tags'],
-                                          args.type,
-                                          str(args.item_num), api_key,
-                                          app_configuration)
+        data = get_info_from_server(args.type, str(args.item_num), api_key,
+                                    app_configuration)
+
+        if args.show_available_fields:
+            print('Here are the available fields for this particular inventory item:')
+            for key, value in data.items():
+                key_name = "{{{{{}}}}}".format(key)
+                print("{:15} = {}".format(key_name, value))
+            sys.exit(0)
+
+        asset_data = {}
+        for tag in template_info['template_tags']:
+            if tag in data:
+                asset_data[tag] = data[tag]
+            else:
+                print(
+                    "WARNING: template field {{ {0} }} not found in data "
+                    "returned from server.".format(tag))
 
         # modify template
         generate_qr_code(args.item_num, template_info, tempdir,
@@ -452,8 +468,7 @@ def get_info_from_template(tempdir) -> dict:
     return info
 
 
-def get_info_from_server(template_tags,
-                         item_type,
+def get_info_from_server(item_type,
                          item_id,
                          api_key,
                          app_configuration) -> dict:
@@ -484,6 +499,40 @@ def get_info_from_server(template_tags,
         }
 
     '''
+
+    def flatten(d, parent_key='', sep='_'):
+        items = []
+        for k, v in d.items():
+            new_key = '{0}{1}{2}'.format(parent_key, sep,
+                                         k) if parent_key else k
+            if isinstance(v, dict):
+                items.extend(flatten(v, new_key, sep=sep).items())
+            elif isinstance(v, list):
+                # apply itself to each element of the list - that's it!
+                items.append((new_key, map(flatten, v)))
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
+    def clean(d):
+        '''
+        Iterates a dict, removing empty keys and converting ints to strings
+        Args:
+            d: dict
+
+        Returns: dict
+
+        '''
+        clean_dict = {}
+        for key, value in d.items():
+            if value is None:
+                continue
+            if isinstance(value, int):
+                clean_dict[key] = str(value)
+            else:
+                clean_dict[key] = value
+        return clean_dict
+
     url = '{root}api/v1/{type}/{id}'.format(
         root=app_configuration['snipe_it_url'], type=item_type, id=item_id)
     headers = {
@@ -491,45 +540,15 @@ def get_info_from_server(template_tags,
         'accept': "application/json"
     }
     data = get(url, headers=headers).json()
+
     if 'status' in data and data['status'] == 'error':
         print('Received the following error from the Snipe-IT server: ',
               data['messages'])
         sys.exit(1)
     else:
-        keys_to_delete = [key for key in data if data[key] is None]
-        for key in keys_to_delete:
-            del data[key]
-        parsed_data = dict(
-            warranty_expires=data.get('warranty_expires'),
-            mac_address=data.get('custom_fields', {}).get('MAC Address',
-                                                          {}).get('value'),
-            model_name=data.get('model', {}).get('name'),
-            notes=data.get('notes'),
-            purchase_cost=data.get('purchase_cost'),
-            last_checkout=data.get('last_checkout', {}).get('formatted'),
-            manufacturer=data.get('manufacturer', {}).get('name'),
-            supplier=data.get('supplier'),
-            expected_checkin=data.get('expected_checkin'),
-            category_name=data.get('category', {}).get('name'),
-            asset_id=data.get('id'),
-            order_number=data.get('order_number'),
-            status=data.get('status_label', {}).get('name'),
-            assigned_to=data.get('assigned_to', {}).get('name'),
-            company=data.get('company'),
-            last_update=data.get('updated_at', {}).get('formatted'),
-            asset_name=data.get('name'),
-            location=data.get('location'),
-            serial_number=data.get('serial'),
-            purchase_date=data.get('purchase_date', {}).get('formatted'),
-            asset_tag=data.get('asset_tag'),
-            created_at=data.get('created_at', {}).get('formatted'),
-            model_number=data.get('model_number'),
-            warranty=data.get('warranty')
-        )
-        results = {}
-        for tag in template_tags:
-            results[tag] = parsed_data[tag]
-        return results
+        data = flatten(data)
+        data = clean(data)
+        return data
 
 
 def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
