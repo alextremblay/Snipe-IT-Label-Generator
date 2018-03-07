@@ -140,59 +140,78 @@ def main():
                                'decrypt your Snipe-IT API key \nPassword> ')
         app_configuration = get_stored_data()
 
-    # process inputs
-    input_file_prompt = 'Please provide the filepath where your template odt ' \
-                        'file can be found (ie. "~/Downloads/Asset-Template' \
-                        '.odt") \nTemplate File path ' \
-                        '[{}]> '.format(str(DEFAULT_IN_FILE_PATH))
-    if not args.input_file:
-        choice = input(input_file_prompt)
-        if not choice:  # User pressed enter to select default file path
-            if DEFAULT_IN_FILE_PATH.exists():
-                args.input_file = str(DEFAULT_IN_FILE_PATH)
-            else:
-                raise Exception(
-                    'There is no template file at {}. Please check and try '
-                    'again'.format(str(DEFAULT_IN_FILE_PATH)))
-        else:  # User supplied file path
-            args.input_file = choice
+    def process_inputs(args):
+        '''
 
-    item_type_prompt = 'Please specify the type of item you would like to ' \
-                       'generate a label for. The avaiable options are: ' \
-                       'assets, accessories, consumables, components ' \
-                       '\nItem Type [assets]> '
-    if not args.type:
-        choice = input(item_type_prompt)
-        if not choice:  # User pressed enter to select default file path
-            args.type = 'assets'
-        else:  # User supplied file path
-            args.type = choice
-    try:
-        assert args.type in \
-               ['assets', 'accessories', 'consumables', 'components']
-    except AssertionError:
-        print('Sorry, {} is not a valid selection. Please try '
-              'again'.format(args.type))
-        sys.exit(1)
-    if args.type == 'assets':
-        # Snipe-IT API entry point for assets is actually hardware
-        args.type = 'hardware'
+        Args:
+            args: Namespace
 
-    item_number_prompt = 'Please provide the asset numer you would like to ' \
-                          'generate a label for \nAsset Number> '
-    if not args.item_num:
-        args.item_num = input(item_number_prompt)
+        Returns:
+            Namespace
 
-    output_file_prompt = 'Please provide the filepath where you would like the ' \
-                         'generated file to be saved (ie. "~/Downloads/Asset-' \
-                         'Label.odt") \nOutput File Path ' \
-                         '[{}]> '.format(str(DEFAULT_OUT_FILE_PATH))
-    if not args.output_file:
-        choice = input(output_file_prompt)
-        if not choice:  # User pressed enter to select default file path
-            args.output_file = str(DEFAULT_OUT_FILE_PATH)
-        else:  # User supplied file path
-            args.output_file = choice
+        '''
+        input_file_prompt = 'Please provide the filepath where your template ' \
+                            'odt ' \
+                            'file can be found (ie. ' \
+                            '"~/Downloads/Asset-Template' \
+                            '.odt") \nTemplate File path ' \
+                            '[{}]> '.format(str(DEFAULT_IN_FILE_PATH))
+        if not args.input_file:
+            choice = input(input_file_prompt)
+            if not choice:  # User pressed enter to select default file path
+                if DEFAULT_IN_FILE_PATH.exists():
+                    args.input_file = str(DEFAULT_IN_FILE_PATH)
+                else:
+                    raise Exception(
+                        'There is no template file at {}. Please check and try '
+                        'again'.format(str(DEFAULT_IN_FILE_PATH)))
+            else:  # User supplied file path
+                args.input_file = choice
+
+        item_type_prompt = 'Please specify the type of item you would like to ' \
+                           '' \
+                           'generate a label for. The avaiable options are: ' \
+                           'assets, accessories, consumables, components ' \
+                           '\nItem Type [assets]> '
+        if not args.type:
+            choice = input(item_type_prompt)
+            if not choice:  # User pressed enter to select default file path
+                args.type = 'assets'
+            else:  # User supplied file path
+                args.type = choice
+        try:
+            assert args.type in \
+                   ['assets', 'accessories', 'consumables', 'components']
+        except AssertionError:
+            print('Sorry, {} is not a valid selection. Please try '
+                  'again'.format(args.type))
+            sys.exit(1)
+        if args.type == 'assets':
+            # Snipe-IT API entry point for assets is actually hardware
+            args.type = 'hardware'
+
+        item_number_prompt = 'Please provide the asset numer you would like ' \
+                             'to ' \
+                             'generate a label for \nAsset Number> '
+        if not args.item_num:
+            args.item_num = input(item_number_prompt)
+
+        output_file_prompt = 'Please provide the filepath where you would ' \
+                             'like the ' \
+                             'generated file to be saved (ie. ' \
+                             '"~/Downloads/Asset-' \
+                             'Label.odt") \nOutput File Path ' \
+                             '[{}]> '.format(str(DEFAULT_OUT_FILE_PATH))
+        if not args.output_file:
+            choice = input(output_file_prompt)
+            if not choice:  # User pressed enter to select default file path
+                args.output_file = str(DEFAULT_OUT_FILE_PATH)
+            else:  # User supplied file path
+                args.output_file = choice
+
+        return args
+
+    args = process_inputs(args)
 
     input_file = Path(args.input_file).expanduser()
     output_file = Path(args.output_file).expanduser()
