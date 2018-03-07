@@ -40,32 +40,12 @@
         This image can be anything and will be used as a placeholder for the
         placement of the auto-generated QR code.
 
-        Additionally, the template file must contain, anywhere within its text,
-        at least one of the following template tags:
-            {{status}}
-            {{order_number}}
-            {{asset_tag}}
-            {{last_update}}
-            {{location}}
-            {{manufacturer}}
-            {{created_at}}
-            {{assigned_to}}
-            {{asset_id}}
-            {{mac_address}}
-            {{purchase_cost}}
-            {{category_name}}
-            {{notes}}
-            {{model_number}}
-            {{asset_name}}
-            {{warranty_expires}}
-            {{last_checkout}}
-            {{expected_checkin}}
-            {{serial_number}}
-            {{supplier}}
-            {{model_name}}
-            {{purchase_date}}
-            {{warranty}}
-            {{company}}
+        The template file can also optionally include "Template Tags" for data
+        to be retrieved from the inventory management system and inserted into
+        the template. For a list of available template tags for a given
+        asset/accessory/etc, run this command with the -s flag. The tags must
+        by entered into the template in the following format:
+            {{tag_name}}
 
     AUTHOR
         Alex Tremblay
