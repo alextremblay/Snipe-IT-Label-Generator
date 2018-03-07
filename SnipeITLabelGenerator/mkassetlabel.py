@@ -234,7 +234,7 @@ def main():
 
         # get the info we need from the server
         asset_data = get_info_from_server(template_info['template_tags'],
-                                          'hardware',
+                                          args.type,
                                           str(args.item_num), api_key,
                                           app_configuration)
 
