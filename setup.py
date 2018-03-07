@@ -36,12 +36,12 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    packages = ['AssetLabelGenerator'],
+    packages = ['SnipeITLabelGenerator'],
     install_requires=['requests', 'pystache', 'cryptography', 'EasySettings',
                       'qrcode', 'pillow'],
     entry_points = {
         'console_scripts': [
-            'mkassetlabel = AssetLabelGenerator.mkassetlabel:main'
+            'mkassetlabel = SnipeITLabelGenerator.mkassetlabel:main'
         ]
     }
 )
