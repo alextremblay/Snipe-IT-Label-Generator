@@ -43,7 +43,7 @@ setup(
                       'qrcode', 'pillow'],
     entry_points={
         'console_scripts': [
-            'mkassetlabel = SnipeITLabelGenerator.mkassetlabel:main'
+            'mkinventorylabel = SnipeITLabelGenerator.mkinventorylabel:main'
         ]
     }
 )

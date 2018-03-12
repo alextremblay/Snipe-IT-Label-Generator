@@ -1,14 +1,14 @@
 """
     NAME
-        mkassetlabel -- AssetLabelGenerator
+        mkinventorylabel -- SnipeITLabelGenerator
 
     SYNOPSIS
-        mkassetlabel [-h] [-r] [-a asset_number] [-p password]
+        mkinventorylabel [-h] [-r] [-a asset_number] [-p password]
                      [-i input_file_path] [-o output_file_path]
 
     DESCRIPTION
-        This Snipe IT Asset Label Generator script takes a template odt file
-        containing a placeholder image file, fills in information in the
+        This Snipe IT Inventory Label Generator script takes a template odt file
+        containing a placeholder image, fills in information in the
         template, replaces the image with a QR code, and produces a completed
         odt file for you to view and print
 
