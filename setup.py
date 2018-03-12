@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name = 'AssetLabelGenerator',
+    name = 'SnipeITLabelGenerator',
     version = '0.1',
-    description='A python command line tool for generating asset labels for Snipe-IT',
+    description='A python command line tool for generating labels for Snipe-IT',
     long_description='''''',
     url='',
     author='Alex Tremblay',
