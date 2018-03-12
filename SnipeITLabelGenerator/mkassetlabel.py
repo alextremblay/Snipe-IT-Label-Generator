@@ -241,7 +241,7 @@ Output File Path [{}]> '''.format(str(DEFAULT_OUT_FILE_PATH))
                     "returned from server.".format(tag))
 
         # modify template
-        generate_qr_code(args.item_num, template_info, tempdir,
+        generate_qr_code(args.type, args.item_num, template_info, tempdir,
                          app_configuration)
         render_template_info(tempdir, asset_data)
 
@@ -520,8 +520,9 @@ def get_info_from_server(item_type,
                 clean_dict[key] = value
         return clean_dict
 
-    url = '{root}api/v1/{type}/{id}'.format(
-        root=app_configuration['snipe_it_url'], type=item_type, id=item_id)
+    url = '{base_url}/{type}/{id}'.format(
+        base_url = app_configuration['snipe_it_url'] + 'api/v1',
+        type=item_type, id=item_id)
     headers = {
         'authorization': 'Bearer ' + api_key,
         'accept': "application/json"
@@ -538,11 +539,13 @@ def get_info_from_server(item_type,
         return data
 
 
-def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
+def generate_qr_code(item_type, item_number, template_info, tempdir,
+                     app_configuration):
     """
 
     Args:
-        asset_number: int
+        item_type: str
+        item_number: int
         template_info:
             Something like this:
             {
@@ -566,10 +569,14 @@ def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
         asset specified by asset_number
 
     """
-    url_for_qr_code_to_point_to = app_configuration['snipe_it_url'] + \
-        'hardware/' + str(asset_number)
+    qr_code_url = '{base_url}/{type}/{id}'
+    qr_code_url = qr_code_url.format(
+        base_url = app_configuration['snipe_it_url'] + 'api/v1',
+        type = item_type,
+        id = str(item_number)
+    )
     qr_code_file = sorted(tempdir.glob('Pictures/*'))[0]
-    imgdata = qrcode.make(url_for_qr_code_to_point_to)
+    imgdata = qrcode.make(qr_code_url)
     dimensions = template_info['qr_code_dimensions']
     imgdata = imgdata.resize(dimensions)
     imgdata.save(str(qr_code_file))
