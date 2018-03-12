@@ -22,22 +22,25 @@
             The item type to look up. Must be one of the following keywords:
                 assets, accessories, consumables, components
         -n, --item-num _number_
-            The unique number id of the item you are looking to make a label for.
-            When you navigate to an item (asset/comsumable/accessory/etc),
-            this id can be found at the end of the url path. ie:
-            For an asset found at https://snipe.company,com/hardware/428 the item number is 428
-            For an accessory found at https://snipe.company.com/accessories/35 the item number is 35
+            The unique number id of the item you are looking to make a
+            label for. When you navigate to an item
+            (asset/comsumable/accessory/etc), this id can be found at the end
+            of the url path. ie: For an asset found at
+            https://snipe.company.com/hardware/428 the item number is 428
+            For an accessory found at https://snipe.company.com/accessories/35
+            the item number is 35
         -p, --password _password_
             The password used to encrypt / decrypt your Snipe-IT API key
         -i, --input-file _filepath_
-            The path to the odt template file you want to use to generate a label
+            The path to the odt template file you want to use to generate a
+            label
         -o, --output-file _filepath_
             The path to the location you would like to save the completed label
             file to
 
     TEMPLATE FILE
-        The template file you wish you use must have one and ONLY one image in it.
-        This image can be anything and will be used as a placeholder for the
+        The template file you wish you use must have one and ONLY one image in
+        it. This image can be anything and will be used as a placeholder for the
         placement of the auto-generated QR code.
 
         The template file can also optionally include "Template Tags" for data
@@ -65,6 +68,7 @@ from getpass import getpass
 
 # External library imports
 import pystache
+import pystache.parser
 from requests import get
 import qrcode
 from PIL import Image
@@ -73,15 +77,15 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-
 # Constants
 STORED_DATA_PATH = Path.home() / '.config' / 'asset-label-generator' / 'data'
 DEFAULT_IN_FILE_PATH = Path.home() / 'Asset-Template.odt'
 DEFAULT_OUT_FILE_PATH = Path.home() / 'Asset-Label.odt'
 
+
 def main():
     def get_program_arguments():
-        '''
+        """
 
         Returns:
             Namespace(
@@ -90,7 +94,7 @@ def main():
                 output_file='some/other/path.odt',
                 password='yourpassword'
             )
-        '''
+        """
 
         # Print help if no arguments given, otherwise run the script
         if '-h' in sys.argv or '--help' in sys.argv:
@@ -118,80 +122,80 @@ def main():
         app_configuration, password = do_first_run_setup(args.password)
     else:
         if not args.password:
-            args.password = getpass('Please enter the password you configured to '
-                               'decrypt your Snipe-IT API key \nPassword> ')
+            args.password = getpass(
+                'Please enter the password you configured to decrypt your '
+                'Snipe-IT API key \nPassword> ')
         app_configuration = get_stored_data()
 
-    def process_inputs(args):
-        '''
+    def process_inputs(arg_namespace):
+        """
 
         Args:
-            args: Namespace
+            arg_namespace: Namespace
 
         Returns:
             Namespace
 
-        '''
-        input_file_prompt = 'Please provide the filepath where your template ' \
-                            'odt ' \
-                            'file can be found (ie. ' \
-                            '"~/Downloads/Asset-Template' \
-                            '.odt") \nTemplate File path ' \
-                            '[{}]> '.format(str(DEFAULT_IN_FILE_PATH))
-        if not args.input_file:
+        """
+        input_file_prompt = '''
+Please provide the filepath where your template odt file can be found 
+(ie. "~/Downloads/Asset-Template.odt")
+Template File path [{}]> '''.format(str(DEFAULT_IN_FILE_PATH))
+        if not arg_namespace.input_file:
             choice = input(input_file_prompt)
             if not choice:  # User pressed enter to select default file path
                 if DEFAULT_IN_FILE_PATH.exists():
-                    args.input_file = str(DEFAULT_IN_FILE_PATH)
+                    arg_namespace.input_file = str(DEFAULT_IN_FILE_PATH)
                 else:
                     raise Exception(
                         'There is no template file at {}. Please check and try '
                         'again'.format(str(DEFAULT_IN_FILE_PATH)))
             else:  # User supplied file path
-                args.input_file = choice
+                arg_namespace.input_file = choice
 
-        item_type_prompt = 'Please specify the type of item you would like to ' \
-                           '' \
-                           'generate a label for. The avaiable options are: ' \
-                           'assets, accessories, consumables, components ' \
-                           '\nItem Type [assets]> '
-        if not args.type:
+        item_type_prompt = '''
+Please specify the type of item you would like to generate a label for. 
+The avaiable options are: 
+    * assets
+    * accessories
+    * consumables
+    * components
+Item Type [assets]> '''
+        if not arg_namespace.type:
             choice = input(item_type_prompt)
             if not choice:  # User pressed enter to select default file path
-                args.type = 'assets'
+                arg_namespace.type = 'assets'
             else:  # User supplied file path
-                args.type = choice
+                arg_namespace.type = choice
         try:
-            assert args.type in \
+            assert arg_namespace.type in \
                    ['assets', 'accessories', 'consumables', 'components']
         except AssertionError:
-            print('Sorry, {} is not a valid selection. Please try '
-                  'again'.format(args.type))
+            msg = 'Sorry, {} is not a valid selection. Please try again'
+            print(msg.format(arg_namespace.type))
             sys.exit(1)
-        if args.type == 'assets':
+        if arg_namespace.type == 'assets':
             # Snipe-IT API entry point for assets is actually hardware
-            args.type = 'hardware'
+            arg_namespace.type = 'hardware'
 
-        item_number_prompt = 'Please provide the asset numer you would like ' \
-                             'to ' \
-                             'generate a label for \nAsset Number> '
-        if not args.item_num:
-            args.item_num = input(item_number_prompt)
+        item_number_prompt = '''
+Please provide the asset numer you would like to generate a label for 
+Asset Number> '''
+        if not arg_namespace.item_num:
+            arg_namespace.item_num = input(item_number_prompt)
 
-        output_file_prompt = 'Please provide the filepath where you would ' \
-                             'like the ' \
-                             'generated file to be saved (ie. ' \
-                             '"~/Downloads/Asset-' \
-                             'Label.odt") \nOutput File Path ' \
-                             '[{}]> '.format(str(DEFAULT_OUT_FILE_PATH))
-        if not args.output_file:
+        output_file_prompt = '''
+Please provide the filepath where you would like the generated file to be saved 
+(ie. "~/Downloads/Asset-Label.odt")
+Output File Path [{}]> '''.format(str(DEFAULT_OUT_FILE_PATH))
+        if not arg_namespace.output_file:
             choice = input(output_file_prompt)
             if not choice:  # User pressed enter to select default file path
-                args.output_file = str(DEFAULT_OUT_FILE_PATH)
+                arg_namespace.output_file = str(DEFAULT_OUT_FILE_PATH)
             else:  # User supplied file path
-                args.output_file = choice
+                arg_namespace.output_file = choice
 
-        return args
+        return arg_namespace
 
     args = process_inputs(args)
 
@@ -206,7 +210,8 @@ def main():
     try:
         compression_info = unpack_template(input_file, tempdir)
 
-        # pull template tags from content.xml file to figure out what info we need
+        # pull template tags from content.xml file to
+        # figure out what info we need
         template_info = get_info_from_template(tempdir)
 
         # make sure asset_tag is included in the list of tags requested
@@ -219,7 +224,8 @@ def main():
                                     app_configuration)
 
         if args.show_available_fields:
-            print('Here are the available fields for this particular inventory item:')
+            print('Here are the available fields for this particular '
+                  'inventory item:')
             for key, value in data.items():
                 key_name = "{{{{{}}}}}".format(key)
                 print("{:15} = {}".format(key_name, value))
@@ -236,8 +242,8 @@ def main():
 
         # modify template
         generate_qr_code(args.item_num, template_info, tempdir,
-                       app_configuration)
-        render_template_info(template_info, tempdir, asset_data)
+                         app_configuration)
+        render_template_info(tempdir, asset_data)
 
         # save template
         pack_template(tempdir, output_file, compression_info)
@@ -251,13 +257,13 @@ def main():
 
 
 def is_first_time_running_program() -> bool:
-    '''
+    """
 
     Returns:
         True if the file at STORED_DATA_PATH exists
         False if it doesn't
 
-    '''
+    """
     if not STORED_DATA_PATH.exists():
         return True
     else:
@@ -265,7 +271,7 @@ def is_first_time_running_program() -> bool:
 
 
 def do_first_run_setup(password=None) -> tuple:
-    '''
+    """
 
     Args:
         password: str
@@ -280,7 +286,7 @@ def do_first_run_setup(password=None) -> tuple:
             'somepassword'
         )
 
-    '''
+    """
 
     app_configuration = {}
 
@@ -290,25 +296,28 @@ def do_first_run_setup(password=None) -> tuple:
     url_prompt = 'Please enter the full URL of your Snipe-IT installation (' \
                  'ie. https://your.company.com/snipe/) \nURL> '
     app_configuration['snipe_it_url'] = input(url_prompt)
-    api_prompt = 'Please enter your personal Snipe-IT API key. A new API key ' \
-                 'can be aquired from the "Manage API Keys" menu in your user ' \
-                 'profile menu on your Snipe-IT installation \nAPI>'
+    api_prompt = '''
+Please enter your personal Snipe-IT API key. A new API key can be aquired from 
+the "Manage API Keys" menu in your user profile menu on your 
+Snipe-IT installation
+API>'''
     unencrypted_api_key = input(api_prompt)
-    pass_prompt = 'Please enter the password you would like to use to encrypt' \
-                  ' your Snipe-IT API key. The password can be ' \
-                  'anything you like, but should be at least 8 characters ' \
-                  'long. Please do not loose this password, you will not be ' \
-                  'able to recover your Snipe-IT API key without it. ' \
-                  '\nPassword> '
+    pass_prompt = '''
+Please enter the password you would like to use to encrypt your 
+Snipe-IT API key. The password can be anything you like, but should be at 
+least 8 characters long. Please do not loose this password, you will not be 
+able to recover your Snipe-IT API key without it. 
+Password> '''
     if not password:
         password = getpass(pass_prompt)
 
     # encrypt api key with password
     cipher = PasswordCipher(password)
+
+    # we need to store the cryptographic salt in order to derive the same
+    # key from the same password the next time our app is run
     app_configuration['encrypted_api_key'] = cipher.encrypt(unencrypted_api_key)
     app_configuration['encryption_salt'] = cipher.salt
-        # we need to store the cryptographic salt in order to derive the same
-        # key from the same password the next time our app is run
 
     # Create STORED_DATA_PATH if it doesn't exists
     STORED_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -317,12 +326,12 @@ def do_first_run_setup(password=None) -> tuple:
     with STORED_DATA_PATH.open('w+b') as f:
         pickle.dump(app_configuration, f)
 
-    #done
-    return (app_configuration, password)
+    # done
+    return app_configuration, password
 
 
 def get_stored_data() -> dict:
-    '''
+    """
 
     Returns:
         Something like:
@@ -332,14 +341,14 @@ def get_stored_data() -> dict:
             'snipe_it_url': 'https://your.company.ca/'
         }
 
-    '''
+    """
     with STORED_DATA_PATH.open('r+b') as f:
         stored_data = pickle.load(f)
     return stored_data
 
 
 def get_api_key(app_configuration, password) -> str:
-    '''
+    """
 
     Args:
         app_configuration:
@@ -355,23 +364,24 @@ def get_api_key(app_configuration, password) -> str:
     Returns:
         str
 
-    '''
+    """
     pw = password
     while True:
         try:
             cipher = PasswordCipher(pw, app_configuration['encryption_salt'])
             api_key = cipher.decrypt(app_configuration['encrypted_api_key'])
         except InvalidPassword:
-            pw = getpass('Error: the provided password is unable to decrypt '
-                               'the stored API key. Are you sure you entered the '
-                               'correct password? \nPlease Try again. \nPassword>')
+            pw = getpass(
+                'Error: the provided password is unable to decrypt the stored '
+                'API key. Are you sure you entered the correct password? \n'
+                'Please Try again. \nPassword>')
             continue  # restart the while loop, try again
         break  # break out of the while loop and complete
     return api_key
 
 
 def unpack_template(input_path, tempdir) -> dict:
-    '''
+    """
 
     Args:
         input_path: Path
@@ -391,10 +401,12 @@ def unpack_template(input_path, tempdir) -> dict:
          'styles.xml': 8}
 
 
-    '''
+    """
     if not input_path.exists():
-        prompt = 'Error: ' + str(input_path) + ' does not seem to exist. Please ' \
-                 'specify a valid path to a *.odt file \nTemplate File Path>'
+        prompt = 'Error: ' + str(input_path) + ' does not seem to exist. ' \
+                                               'Please specify a valid path ' \
+                                               'to a *.odt file \nTemplate ' \
+                                               'File Path>'
         new_path = input(prompt)
         input_path = Path(new_path).expanduser()
     input_file = ZipFile(str(input_path))
@@ -406,7 +418,7 @@ def unpack_template(input_path, tempdir) -> dict:
 
 
 def get_info_from_template(tempdir) -> dict:
-    '''
+    """
 
     Args:
         tempdir: Path
@@ -418,11 +430,9 @@ def get_info_from_template(tempdir) -> dict:
             'template_tags': ['asset_tag', 'serial_number', 'model_number'],
         }
 
-    '''
+    """
 
-    info = {}
-    info['qr_code'] = {}
-    info['template_tags'] = []
+    info = {'qr_code': {}, 'template_tags': []}
 
     # get dimensions & filename of QR code placeholder
     images_in_template = sorted(tempdir.glob('Pictures/*'))
@@ -452,12 +462,9 @@ def get_info_from_server(item_type,
                          item_id,
                          api_key,
                          app_configuration) -> dict:
-    '''
+    """
 
     Args:
-        template_tags:
-            Something like:
-            ['asset_tag', 'serial_number', 'model_number']
         item_type:
             One of: ['hardware', 'accessories', 'consumables', 'components']
         item_id: str
@@ -478,7 +485,7 @@ def get_info_from_server(item_type,
             'model_number': 'AP82i'
         }
 
-    '''
+    """
 
     def flatten(d, parent_key='', sep='_'):
         items = []
@@ -495,14 +502,14 @@ def get_info_from_server(item_type,
         return dict(items)
 
     def clean(d):
-        '''
+        """
         Iterates a dict, removing empty keys and converting ints to strings
         Args:
             d: dict
 
         Returns: dict
 
-        '''
+        """
         clean_dict = {}
         for key, value in d.items():
             if value is None:
@@ -532,7 +539,7 @@ def get_info_from_server(item_type,
 
 
 def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
-    '''
+    """
 
     Args:
         asset_number: int
@@ -542,8 +549,9 @@ def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
                 'qr_code_dimensions': (370, 370),  # width and height
                 'template_tags': ['asset_tag', 'serial_number', 'model_number'],
             }
-        output_file:
-                ZipFile instance of a temporary copy of the template.odt file
+        tempdir:
+                the temporary file location where the decompressed template
+                is being staged / modified
         app_configuration:
             Something like:
             {
@@ -557,9 +565,9 @@ def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
         tempdir gets overwritten by a QR code image of a URL pointing to the
         asset specified by asset_number
 
-    '''
-    url_for_qr_code_to_point_to = app_configuration['snipe_it_url'] \
-                                  + 'hardware/' + str(asset_number)
+    """
+    url_for_qr_code_to_point_to = app_configuration['snipe_it_url'] + \
+        'hardware/' + str(asset_number)
     qr_code_file = sorted(tempdir.glob('Pictures/*'))[0]
     imgdata = qrcode.make(url_for_qr_code_to_point_to)
     dimensions = template_info['qr_code_dimensions']
@@ -567,16 +575,10 @@ def generate_qr_code(asset_number, template_info, tempdir, app_configuration):
     imgdata.save(str(qr_code_file))
 
 
-def render_template_info(template_info, tempdir, asset_data):
-    '''
+def render_template_info(tempdir, asset_data):
+    """
 
         Args:
-            template_info:
-                Something like this:
-                {
-                    'qr_code_dimensions': (370, 370),  # width and height
-                    'template_tags': ['asset_tag', 'serial_number', 'model_number'],
-                }
             tempdir: Path
             asset_data:
                 Something like:
@@ -592,7 +594,7 @@ def render_template_info(template_info, tempdir, asset_data):
             replaced by the data in asset_data, and then that modified file
             gets written into the template_file
 
-        '''
+        """
     content_file = tempdir / 'content.xml'
     template_string = content_file.read_text()
     rendered_template = pystache.render(template_string, asset_data)
@@ -601,7 +603,7 @@ def render_template_info(template_info, tempdir, asset_data):
 
 
 def pack_template(tempdir, output_file, compression_info):
-    '''
+    """
 
     Args:
         tempdir: Path
@@ -610,11 +612,10 @@ def pack_template(tempdir, output_file, compression_info):
 
     Side Effect:
         The contents of tempdir are packed into an archive stored at output_file
-    '''
+    """
     if output_file.exists():
         output_file.unlink()  # unlink means delete
     with ZipFile(str(output_file), 'x', compression=ZIP_DEFLATED) as label_file:
-
 
         for file in tempdir.glob('**/*'):
             arcname = file.relative_to(tempdir)
@@ -628,16 +629,16 @@ class InvalidPassword(Exception):
 
 
 class PasswordCipher(object):
-    def __init__(self, password: str, salt = None):
+    def __init__(self, password: str, salt=None):
         password = bytes(password, 'utf')
         self.salt = salt if salt else os.urandom(16)
         kdf = PBKDF2HMAC(
-            algorithm = hashes.SHA256(),
-            length = 32,
-            salt = self.salt,
-            iterations = 100000,
-            backend = default_backend()
-            )
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=self.salt,
+            iterations=100000,
+            backend=default_backend()
+        )
         self.key = base64.urlsafe_b64encode(kdf.derive(password))
 
     def encrypt(self, plaintext: str) -> bytes:

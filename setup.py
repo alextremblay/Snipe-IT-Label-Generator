@@ -1,9 +1,10 @@
 from setuptools import setup
 
 setup(
-    name = 'SnipeITLabelGenerator',
-    version = '0.1',
-    description='A python command line tool for generating labels for Snipe-IT',
+    name='SnipeITLabelGenerator',
+    version='0.1',
+    description='A python command line tool for generating labels for '
+                'Snipe-IT',
     long_description='''''',
     url='',
     author='Alex Tremblay',
@@ -21,7 +22,8 @@ setup(
         'Topic :: System :: Systems Administration',
         'Topic :: Utilities',
 
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 ('
+        'LGPLv3)',
 
         'Operating System :: MacOS',
         'Operating System :: Microsoft',
@@ -36,10 +38,10 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    packages = ['SnipeITLabelGenerator'],
+    packages=['SnipeITLabelGenerator'],
     install_requires=['requests', 'pystache', 'cryptography', 'EasySettings',
                       'qrcode', 'pillow'],
-    entry_points = {
+    entry_points={
         'console_scripts': [
             'mkassetlabel = SnipeITLabelGenerator.mkassetlabel:main'
         ]
