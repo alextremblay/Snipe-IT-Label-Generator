@@ -10,10 +10,8 @@ Install
 
 To install:
 
-```
-https://github.com/alextremblay/Snipe-IT-Label-Generator
-pip install .
-```
+`git clone https://github.com/alextremblay/Snipe-IT-Label-Generator`
+`pip install .`
 
 Use
 ---
