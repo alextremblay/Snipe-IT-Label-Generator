@@ -37,6 +37,9 @@
         -o, --output-file _filepath_
             The path to the location you would like to save the completed label
             file to
+        -s, --show-available-fields
+            Use this flag to retrieve a list of all data fields in Snipe IT
+            for a given item, along with tag names for each
 
     TEMPLATE FILE
         The template file you wish you use must have one and ONLY one image in
@@ -58,6 +61,8 @@
 import sys
 import base64
 import os
+import sys
+import time
 import argparse
 import pickle
 import tempfile
@@ -65,6 +70,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from shutil import rmtree
 from pathlib import Path
 from getpass import getpass
+from subprocess import run
 
 # External library imports
 import pystache
@@ -184,16 +190,19 @@ Asset Number> '''
         if not arg_namespace.item_num:
             arg_namespace.item_num = input(item_number_prompt)
 
-        output_file_prompt = '''
-Please provide the filepath where you would like the generated file to be saved 
-(ie. "~/Downloads/Asset-Label.odt")
-Output File Path [{}]> '''.format(str(DEFAULT_OUT_FILE_PATH))
+#         output_file_prompt = '''
+# Please provide the filepath where you would like the generated file to be saved 
+# (ie. "~/Downloads/Asset-Label.odt")
+# Output File Path [{}]> '''.format(str(DEFAULT_OUT_FILE_PATH))
+#         if not arg_namespace.output_file:
+#             choice = input(output_file_prompt)
+#             if not choice:  # User pressed enter to select default file path
+#                 arg_namespace.output_file = str(DEFAULT_OUT_FILE_PATH)
+#             else:  # User supplied file path
+#                 arg_namespace.output_file = choice
         if not arg_namespace.output_file:
-            choice = input(output_file_prompt)
-            if not choice:  # User pressed enter to select default file path
-                arg_namespace.output_file = str(DEFAULT_OUT_FILE_PATH)
-            else:  # User supplied file path
-                arg_namespace.output_file = choice
+            _, name = tempfile.mkstemp(suffix='.odt')
+            arg_namespace.output_file = name
 
         return arg_namespace
 
@@ -250,6 +259,14 @@ Output File Path [{}]> '''.format(str(DEFAULT_OUT_FILE_PATH))
 
         print('Done! The newly-generated asset label can be found at '
               + str(output_file))
+        out_file_pdf = str(output_file.stem) + '.pdf'
+        out_dir = str(output_file.parent)
+        if sys.platform == 'darwin':
+            run(['/Applications/LibreOffice.app/Contents/MacOS/soffice',
+                 '--convert-to', 'pdf', '--outdir', out_dir, str(output_file)])
+            time.sleep(1)
+            run(['open', out_dir + '/' + out_file_pdf])
+
     finally:
         # if anything goes wrong while the tempdir exists, we want to make sure
         # the tempdir is properly removed.

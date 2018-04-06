@@ -1,3 +1,4 @@
 .idea/
-AssetLabeLgenerator.egg-info
+*.egg-info
+__pycache__/
 Pipfile.lock
