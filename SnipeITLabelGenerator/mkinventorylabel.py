@@ -541,7 +541,7 @@ def get_info_from_server(item_type,
         base_url = app_configuration['snipe_it_url'] + 'api/v1',
         type=item_type, id=item_id)
     headers = {
-        'authorization': 'Bearer ' + api_key,
+        'authorization': 'Bearer ' + api_key.strip(),
         'accept': "application/json"
     }
     data = get(url, headers=headers).json()
