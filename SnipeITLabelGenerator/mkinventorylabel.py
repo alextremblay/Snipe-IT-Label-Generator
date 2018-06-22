@@ -266,6 +266,11 @@ Asset Number> '''
                  '--convert-to', 'pdf', '--outdir', out_dir, str(output_file)])
             time.sleep(1)
             run(['open', out_dir + '/' + out_file_pdf])
+        elif sys.platform == 'linux':
+            run(['soffice', '--convert-to', 'pdf', '--outdir', out_dir,
+                 str(output_file)])
+            time.sleep(1)
+            run(['xdg-open', out_dir + '/' + out_file_pdf])
 
     finally:
         # if anything goes wrong while the tempdir exists, we want to make sure
