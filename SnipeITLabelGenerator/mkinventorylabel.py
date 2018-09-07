@@ -1,10 +1,12 @@
 """
     NAME
-        mkinventorylabel -- SnipeITLabelGenerator
+        mklabel -- SnipeITLabelGenerator
 
     SYNOPSIS
-        mkinventorylabel [-h] [-r] [-a asset_number] [-p password]
-                     [-i input_file_path] [-o output_file_path]
+        mklabel -h
+        mklabel -s
+        mklabel [-t type] [-n item_number] [-i input_file_path] [-o output_file_path]
+        mklabel -r
 
     DESCRIPTION
         This Snipe IT Inventory Label Generator script takes a template odt file
@@ -13,7 +15,6 @@
         odt file for you to view and print
 
     COMMAND LINE OPTIONS
-
         -h, --help
             Print this help message and exit
         -r, --reset
