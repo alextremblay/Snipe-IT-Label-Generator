@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='SnipeITLabelGenerator',
-    version='0.1',
+    version='2.0',
     description='A python command line tool for generating labels for '
                 'Snipe-IT',
     long_description='''''',
@@ -39,11 +39,11 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     packages=['SnipeITLabelGenerator'],
-    install_requires=['requests', 'pystache', 'cryptography', 'EasySettings',
-                      'qrcode', 'pillow'],
+    install_requires=['requests', 'pystache', 'EasySettings',
+                      'qrcode', 'pillow', 'dataclasses; python_version<"3.7"'],
     entry_points={
         'console_scripts': [
-            'mkinventorylabel = SnipeITLabelGenerator.mkinventorylabel:main'
+            'mklabel = SnipeITLabelGenerator.mkinventorylabel:main'
         ]
     }
 )
