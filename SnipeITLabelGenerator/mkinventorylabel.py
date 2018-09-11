@@ -101,6 +101,11 @@ Please provide the filepath where your template odt file can be found
 (ie. "~/Downloads/Asset-Template.odt")
 Template File path [{}]> '''.format(str(DEFAULT_IN_FILE_PATH))
         if not self.input_file:
+            if not sys.stdout.isatty():
+                sys.stderr.write("When piping this application's output, "
+                                "template file path must be specified as a "
+                                "command argument (the '-i' flag)")
+                sys.exit(1)
             choice = input(input_file_prompt)
             if not choice:  # User pressed enter to select default file path
                 if DEFAULT_IN_FILE_PATH.exists():
@@ -121,6 +126,11 @@ The avaiable options are:
     * components
 Item Type [assets]> '''
         if not self.type:
+            if not sys.stdout.isatty():
+                sys.stderr.write("When piping this application's output, "
+                                "item type must be specified as a "
+                                "command argument (the '-t' flag)")
+                sys.exit(1)
             choice = input(item_type_prompt)
             if not choice:  # User pressed enter to select default file path
                 self.type = 'assets'
@@ -141,6 +151,11 @@ Item Type [assets]> '''
 Please provide the asset numer you would like to generate a label for 
 Asset Number> '''
         if not self.item_num:
+            if not sys.stdout.isatty():
+                sys.stderr.write("When piping this application's output, "
+                                "item number must be specified as a "
+                                "command argument (the '-n' flag)")
+                sys.exit(1)
             self.item_num = input(item_number_prompt)
         if not self.output_file:
             _, name = tempfile.mkstemp(suffix='.odt')
@@ -159,7 +174,7 @@ def notify(*args):
     if sys.stdout.isatty():
         print(*args)
     else:
-        LOG.info(*args)
+        LOG.warning(*args)
 
 def main():
     appdata = AppData(**config.get('SnipeITLabelGenerator', [
@@ -287,7 +302,7 @@ def main():
             elif sys.platform == 'linux':
                 run(['xdg-open', str(out_file_pdf)])
         else:
-            sys.stdout.write(out_file_pdf.read_text())
+            sys.stdout.buffer.write(out_file_pdf.read_bytes())
 
     finally:
         # if anything goes wrong while the tempdir exists, we want to make sure
