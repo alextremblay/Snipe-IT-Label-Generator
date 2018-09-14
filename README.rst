@@ -32,7 +32,7 @@ If you use MacPorts, you're on your own. The commands / library names may be dif
 Debian Linux
 ............
 
-Run the following command to install dependecies(without the backticks`):
+Run the following command to install dependecies:
 
 ``sudo apt-get install python3.6 openssl``
 
