@@ -10,9 +10,6 @@ inventory system.
 Installation
 ------------
 
-Prerequisistes
-..............
-
 This application requires the following be installed:
 
  * Python >= 3.6
@@ -22,23 +19,22 @@ This application requires the following be installed:
 MacOS
 .....
 
-This document assumes that your MacOS package manager of choice is `HomeBrew <https://brew.sh>`_. If you use MacPorts,
-the commands / library names may be different.
-To install HomeBrew, run the following (without the backticks`):
+To install dependencies with `HomeBrew <https://brew.sh>`_, Run the following command:
 
-`/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+``brew install python openssl``
 
-Run the following command to install dependecies(without the backticks`):
+If you don't have `HomeBrew <https://brew.sh>`_, you can install it with this command:
 
-`brew install python openssl`
+``/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"``
 
+If you use MacPorts, you're on your own. The commands / library names may be different.
 
 Debian Linux
 ............
 
-Run the following command to install dependecies(without the backticks`):
+Run the following command to install dependecies:
 
-`sudo apt-get install python3.6 openssl`
+``sudo apt-get install python3.6 openssl``
 
 
 Install
